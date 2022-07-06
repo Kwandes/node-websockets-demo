@@ -11,19 +11,32 @@ const clients = new Map(); // list of connected clients
 
 wss.on("connection", function connection(ws, req) {
   // logic that occurs for every new connection
-  const id = clients.length; // IDs to identify different connected clients
-  const metadata = { id };
 
-  clients.set(ws, metadata);
   console.log(`New connection with ${req.socket.remoteAddress}`);
+
+  const id = clients.size + 1; // IDs to identify different connected clients
+  const metadata = { id, address: req.socket.remoteAddress };
+  clients.set(ws, metadata);
+
   // Send a simple message to the connected client
   ws.send("Connection established");
 
   // Handle incoming messages
   ws.on("message", function message(data) {
     console.log(`Received from ${req.socket.remoteAddress}: %s`, data);
-    // TODO - handle different messages
-    ws.send("Message acknowledged and politely ignored");
+    const { action } = JSON.parse(data);
+    let response;
+    switch (action) {
+      case "listClients":
+        response = JSON.stringify([...clients.values()]);
+        break;
+      case "marco":
+        response = "polo";
+        break;
+      default:
+        response = "Message acknowledged and politely ignored";
+    }
+    ws.send(response);
   });
 
   // Handle closing of the connection
