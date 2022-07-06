@@ -23,20 +23,25 @@ wss.on("connection", function connection(ws, req) {
 
   // Handle incoming messages
   ws.on("message", function message(data) {
-    console.log(`Received from ${req.socket.remoteAddress}: %s`, data);
-    const { action } = JSON.parse(data);
-    let response;
-    switch (action) {
-      case "listClients":
-        response = JSON.stringify([...clients.values()]);
-        break;
-      case "marco":
-        response = "polo";
-        break;
-      default:
-        response = "Message acknowledged and politely ignored";
+    try {
+      console.log(`Received from ${req.socket.remoteAddress}: %s`, data);
+      const { action } = JSON.parse(data);
+      let response;
+      switch (action) {
+        case "listClients":
+          response = JSON.stringify([...clients.values()]);
+          break;
+        case "marco":
+          response = "polo";
+          break;
+        default:
+          response = "Message acknowledged and politely ignored";
+      }
+      ws.send(response);
+    } catch (err) {
+      console.error(err);
+      ws.send("ERROR: Failed to process the messasge");
     }
-    ws.send(response);
   });
 
   // Handle closing of the connection
